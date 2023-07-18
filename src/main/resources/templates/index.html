@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文件上传</title>
+</head>
+
+<body>
+<h2 style="color: green;">${message!}</h2>
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <div><input type="file" name="file" multiple></div>
+    <div><button type="submit">上传</button></div>
+</form>
+
+<#if fs??>
+    <table>
+        <tr>
+            <td>名称</td>
+            <td>操作</td>
+        </tr>
+        <#list fs as f>
+            <tr>
+                <td>${f.name}</td>
+                <td><a href="/download?f=${f.name}">下载</a></td>
+            </tr>
+        </#list>
+    </table>
+</#if>
+</body>
+
+</html>
