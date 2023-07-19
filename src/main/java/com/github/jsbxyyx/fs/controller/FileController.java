@@ -7,7 +7,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
@@ -77,15 +76,17 @@ public class FileController {
                 .replace("}", "")
                 .replace("[", "")
                 .replace("]", "");
-        response.addHeader("Content-Disposition", "attachment;filename=" + new String(outFilename.getBytes("UTF-8"), "ISO-8859-1"));
+        response.addHeader("Content-Disposition", "attachment;filename=" +
+                new String(outFilename.getBytes("UTF-8"), "ISO-8859-1"));
         response.addHeader("Content-Length", "" + file.length());
         response.setContentType("application/octet-stream");
         try (InputStream in = new BufferedInputStream(new FileInputStream(file));
              OutputStream out = new BufferedOutputStream(response.getOutputStream())) {
-            byte[] buffer = new byte[4096];
+            byte[] buffer = new byte[8192];
             int n;
             while ((n = in.read(buffer)) != -1) {
                 out.write(buffer, 0, n);
+                out.flush();
             }
         }
     }
