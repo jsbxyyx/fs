@@ -13,11 +13,11 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
-        String preferedNetwork = System.getProperty("preferedNetwork", "192.168,10.");
+        String network = System.getProperty("network", "192.168,10.");
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         String port = context.getEnvironment().getProperty("server.port");
         log.info("\n\n\thttp://{}:{}\n\thttp://127.0.0.1:{}",
-                NetUtil.getLocalIp(preferedNetwork.split(",")), port, port);
+                NetUtil.getLocalIp(network.split(",")), port, port);
     }
 
 }
