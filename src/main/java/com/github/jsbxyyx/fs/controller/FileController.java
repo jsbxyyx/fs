@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -44,6 +46,12 @@ public class FileController {
                 fs.add(fd);
             }
         }
+        Collections.sort(fs, new Comparator<Fd>() {
+            @Override
+            public int compare(Fd o1, Fd o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
         request.setAttribute("fs", fs);
         return "index";
     }
