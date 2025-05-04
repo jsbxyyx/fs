@@ -13,6 +13,9 @@ public class Application {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
     public static void main(String[] args) {
+        if (args != null && args.length > 0) {
+            System.setProperty("fs.dir", args[0]);
+        }
         String network = System.getProperty("network", "192.168,10.");
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         String port = context.getEnvironment().getProperty("server.port");
