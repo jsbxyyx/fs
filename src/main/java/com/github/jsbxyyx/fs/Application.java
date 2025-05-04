@@ -19,7 +19,7 @@ public class Application {
         String network = System.getProperty("network", "192.168,10.");
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         String port = context.getEnvironment().getProperty("server.port");
-        log.info("\n\n\thttp://{}:{}\n\thttp://127.0.0.1:{}",
+        log.info("\n\n\thttp://{}:{}\n\thttp://127.0.0.1:{}\n",
                 NetUtil.getLocalIp(network.split(",")), port, port);
     }
 
