@@ -14,7 +14,7 @@ public class ArgsParser {
 
     private final String command;
     private final List<String> parameters = new ArrayList<>();
-    private final Map<String/*argName*/, Arg<?>> values = new LinkedHashMap<>();
+    private final Map<String/*argName*/, List<Object>> values = new LinkedHashMap<>();
     private final Map<String/*argName*/, Option> options = new LinkedHashMap<>();
     private final Map<String/*-option | --option*/, String/*argName*/> names = new HashMap<>();
 
@@ -32,9 +32,17 @@ public class ArgsParser {
         return this;
     }
 
-    public <T> T getParsedOptionValue(String name) {
-        Arg<?> arg = values.get(name);
-        return arg == null ? null : (T) arg.getValue();
+    public <T> List<T> getValue(String name) {
+        return (List<T>) values.get(name);
+    }
+
+    public <T> T getFirstValue(String name) {
+        return getValue(name, 0);
+    }
+
+    public <T> T getValue(String name, int index) {
+        List<T> arg = getValue(name);
+        return arg == null || arg.isEmpty() ? null : arg.get(index);
     }
 
     public List<String> getParameters() {
@@ -60,10 +68,16 @@ public class ArgsParser {
                         Option option = options.get(argName);
                         if (!option.isHelp()) {
                             i++;
-                            Arg<?> value = new Arg<>(option.getArgName(), option.getConverter().apply(args[i]));
-                            values.put(option.getArgName(), value);
+                            Object value = option.getConverter().apply(args[i]);
+                            if (values.containsKey(option.getArgName())) {
+                                values.get(option.getArgName()).add(value);
+                            } else {
+                                List<Object> list = new ArrayList<>();
+                                list.add(value);
+                                values.put(option.getArgName(), list);
+                            }
                         } else {
-                            values.put(option.getArgName(), null);
+                            values.put(option.getArgName(), new ArrayList<>());
                         }
                     } else {
                         parameters.add(arg);
@@ -138,24 +152,6 @@ public class ArgsParser {
 
         public boolean isHelp() {
             return help;
-        }
-    }
-
-    public static class Arg<T> {
-        private final String name;
-        private final T value;
-
-        public Arg(String name, T value) {
-            this.name = Objects.requireNonNull(name);
-            this.value = value;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public T getValue() {
-            return value;
         }
     }
 

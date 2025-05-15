@@ -39,11 +39,11 @@ public class Application {
             if (!parser.getParameters().isEmpty()) {
                 System.setProperty("fs.dir", parser.getParameters().get(0));
             }
-            Boolean download = parser.getParsedOptionValue("download");
+            Boolean download = parser.getFirstValue("download");
             if (download != null) {
                 System.setProperty("fs.download", download.toString());
             }
-            Boolean upload = parser.getParsedOptionValue("upload");
+            Boolean upload = parser.getFirstValue("upload");
             if (upload != null) {
                 System.setProperty("fs.upload", upload.toString());
             }
