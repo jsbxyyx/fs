@@ -1,3 +1,4 @@
+REM chcp 65001
 REM set JAVA_HOME=D:\.jdks\jdk8
 IF "%JAVA_HOME%" == "" (
     echo undefine JAVA_HOME
