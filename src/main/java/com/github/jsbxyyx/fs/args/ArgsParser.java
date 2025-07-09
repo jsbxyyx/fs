@@ -23,7 +23,7 @@ public class ArgsParser {
     }
 
     public ArgsParser addOption(Option option) {
-        if (names.containsKey(H_LINE + option.getOpt()) || names.containsValue(H_LINE2 + option.getLongOpt())) {
+        if (names.containsKey(H_LINE + option.getOpt()) || names.containsKey(H_LINE2 + option.getLongOpt())) {
             throw new ParseException(H_LINE + option.getOpt() + "," + H_LINE2 + option.getLongOpt() + " already exists");
         }
         names.put(H_LINE + option.getOpt(), option.getArgName());
