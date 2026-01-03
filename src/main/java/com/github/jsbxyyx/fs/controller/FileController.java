@@ -96,12 +96,13 @@ public class FileController {
             SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss");
             String format = formatter.format(new Date());
             if (StringUtils.hasText(text)) {
-                File file = new File(FS_DIR + "/" + "TEXT-" + format + ".txt");
+                String name = "TEXT-" + format + ".txt";
+                File file = new File(FS_DIR + "/" + name);
                 try {
                     Files.write(file.toPath(), text.getBytes(StandardCharsets.UTF_8));
-                    sb.append("[").append(text.length() > 10 ? text.substring(0, 10) : text).append("]").append("上传成功\n");
+                    sb.append(name).append("上传成功\n");
                 } catch (IOException e) {
-                    sb.append("[").append(text.length() > 10 ? text.substring(0, 10) : text).append("]").append("上传失败\n");
+                    sb.append(name).append("上传失败\n");
                 }
             } else {
                 sb.append("文本内容为空");
