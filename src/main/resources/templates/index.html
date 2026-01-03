@@ -354,7 +354,7 @@
 <div class="container">
     <!-- 页面头部 -->
     <div class="header">
-        <h1>📦 文件上传管理系统</h1>
+        <h1>📦 <a href="/" style="text-decoration:none;">文件上传管理系统</a></h1>
         <p>轻松上传、管理和分享您的文件</p>
     </div>
 
@@ -459,7 +459,7 @@
     }
 
     // 文件选择提示
-    document. getElementById('fileInput')?.addEventListener('change', function(e) {
+    document.getElementById('fileInput').addEventListener('change', function(e) {
         const fileCount = e.target.files.length;
         if (fileCount > 0) {
             console.log('已选择 '+ fileCount + ' 个文件');
