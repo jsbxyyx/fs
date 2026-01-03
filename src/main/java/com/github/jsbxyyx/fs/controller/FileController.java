@@ -1,5 +1,15 @@
 package com.github.jsbxyyx.fs.controller;
 
+import org.springframework.stereotype.Controller;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -9,18 +19,11 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /**
  * @author jsbxyyx
@@ -85,8 +88,33 @@ public class FileController {
         return "redirect:/";
     }
 
+    @PostMapping({"/upload-text"})
+    public String upload(@RequestParam("text") String text, RedirectAttributes attributes) {
+        StringBuilder sb = new StringBuilder();
+
+        if (UPLOAD) {
+            SimpleDateFormat formatter = new SimpleDateFormat("yyyyMMdd-HHmmss");
+            String format = formatter.format(new Date());
+            if (StringUtils.hasText(text)) {
+                File file = new File(FS_DIR + "/" + "TEXT-" + format + ".txt");
+                try {
+                    Files.write(file.toPath(), text.getBytes(StandardCharsets.UTF_8));
+                    sb.append("[").append(text.length() > 10 ? text.substring(0, 10) : text).append("]").append("上传成功\n");
+                } catch (IOException e) {
+                    sb.append("[").append(text.length() > 10 ? text.substring(0, 10) : text).append("]").append("上传失败\n");
+                }
+            } else {
+                sb.append("文本内容为空");
+            }
+        } else {
+            sb.append("禁止上传");
+        }
+        attributes.addFlashAttribute("message", sb.toString());
+        return "redirect:/";
+    }
+
     @GetMapping({"/download"})
-    public void download(HttpServletResponse response, String f) throws IOException {
+    public void download(HttpServletResponse response, @RequestParam("f") String f) throws IOException {
         if (DOWNLOAD) {
             File file = new File(FS_DIR + "/" + f);
             String outFilename = f.replace("|", "")
@@ -111,6 +139,23 @@ public class FileController {
             response.setContentType("text/plain;charset=utf-8");
             try (PrintWriter out = response.getWriter()) {
                 out.write("禁止下载");
+            }
+        }
+    }
+
+    @GetMapping({"/view"})
+    public void view(HttpServletResponse response, @RequestParam("f") String f) throws IOException {
+        File file = new File(FS_DIR + "/" + f);
+        response.addHeader("Content-Length", "" + file.length());
+        response.setCharacterEncoding("utf-8");
+        response.setContentType("text/plain");
+        try (InputStream in = new BufferedInputStream(Files.newInputStream(file.toPath()));
+             OutputStream out = new BufferedOutputStream(response.getOutputStream())) {
+            byte[] buffer = new byte[8192];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+                out.flush();
             }
         }
     }

@@ -38,14 +38,17 @@ public class Application {
             }
             if (!parser.getParameters().isEmpty()) {
                 System.setProperty("fs.dir", parser.getParameters().get(0));
+                log.info("file dir : {}", parser.getParameters().get(0));
             }
             Boolean download = parser.getFirstValue("download");
             if (download != null) {
                 System.setProperty("fs.download", download.toString());
+                log.info("enable download : {}", download);
             }
             Boolean upload = parser.getFirstValue("upload");
             if (upload != null) {
                 System.setProperty("fs.upload", upload.toString());
+                log.info("enable upload : {}", upload);
             }
         } catch (ArgsParser.ParseException e) {
             parser.printUsage();

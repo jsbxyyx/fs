@@ -1,0 +1,232 @@
+<!-- 文本信息展示对话框 -->
+<div id="textDialog" class="dialog-overlay" style="display: none;">
+    <div class="dialog-container">
+        <div class="dialog-header">
+            <h3 class="dialog-title">${title!'信息'}</h3>
+            <button class="dialog-close-btn" onclick="closeDialog()">&times;</button>
+        </div>
+
+        <div class="dialog-body">
+            <div class="text-content" id="dialogTextContent">
+                ${content!''}
+            </div>
+        </div>
+
+        <div class="dialog-footer">
+            <button class="btn btn-copy" onclick="copyText()">
+                <span class="icon">📋</span> 复制
+            </button>
+            <button class="btn btn-close" onclick="closeDialog()">关闭</button>
+        </div>
+    </div>
+</div>
+
+<style>
+    .dialog-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom:  0;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+    }
+
+    .dialog-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        /*min-width: 400px;*/
+        max-width: 600px;
+        max-height: 80vh;
+        display: flex;
+        flex-direction: column;
+        margin: 5px;
+    }
+
+    .dialog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items:  center;
+        padding: 16px 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    .dialog-title {
+        margin: 0;
+        font-size: 18px;
+        font-weight:  600;
+        color: #111827;
+    }
+
+    .dialog-close-btn {
+        background: none;
+        border: none;
+        font-size: 28px;
+        line-height: 1;
+        color: #6b7280;
+        cursor: pointer;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: background-color 0.2s;
+    }
+
+    .dialog-close-btn:hover {
+        background-color: #f3f4f6;
+        color: #111827;
+    }
+
+    .dialog-body {
+        padding: 20px;
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .text-content {
+        background-color: #f9fafb;
+        border:  1px solid #e5e7eb;
+        border-radius: 4px;
+        padding: 12px;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height:  1.6;
+        color: #374151;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+
+    .dialog-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        padding: 16px 20px;
+        border-top: 1px solid #e5e7eb;
+    }
+
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition:  all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-copy {
+        background-color: #3b82f6;
+        color: white;
+    }
+
+    .btn-copy:hover {
+        background-color: #2563eb;
+    }
+
+    .btn-close {
+        background-color:  #6b7280;
+        color: white;
+    }
+
+    .btn-close:hover {
+        background-color:  #4b5563;
+    }
+
+    .icon {
+        font-size: 16px;
+    }
+
+    /* 复制成功提示 */
+    .copy-success {
+        background-color:  #10b981 !important;
+    }
+</style>
+
+<script>
+    // 打开对话框
+    function openDialog(title, content) {
+        document.getElementById('textDialog').style.display = 'flex';
+        if (title) {
+            document.querySelector('.dialog-title').textContent = title;
+        }
+        content = content || ''
+        document.getElementById('dialogTextContent').textContent = content;
+    }
+
+    // 关闭对话框
+    function closeDialog() {
+        document.getElementById('textDialog').style.display = 'none';
+    }
+
+    // 复制文本
+    function copyText() {
+        const textContent = document.getElementById('dialogTextContent').textContent;
+        const copyBtn = document.querySelector('.btn-copy');
+
+        // 使用 Clipboard API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textContent).then(function() {
+                showCopySuccess(copyBtn);
+            }).catch(function(err) {
+                fallbackCopy(textContent, copyBtn);
+            });
+        } else {
+            fallbackCopy(textContent, copyBtn);
+        }
+    }
+
+    // 备用复制方法
+    function fallbackCopy(text, btn) {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-9999px';
+        document.body.appendChild(textArea);
+        textArea.select();
+
+        try {
+            document.execCommand('copy');
+            showCopySuccess(btn);
+        } catch (err) {
+            alert('复制失败，请手动复制');
+        }
+
+        document.body.removeChild(textArea);
+    }
+
+    // 显示复制成功效果
+    function showCopySuccess(btn) {
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<span class="icon">✓</span> 已复制';
+        btn.classList.add('copy-success');
+
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn. classList.remove('copy-success');
+        }, 2000);
+    }
+
+    // 点击遮罩层关闭
+    document.addEventListener('click', function(e) {
+        if (e.target. classList.contains('dialog-overlay')) {
+            closeDialog();
+        }
+    });
+
+    // ESC 键关闭
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            closeDialog();
+        }
+    });
+</script>

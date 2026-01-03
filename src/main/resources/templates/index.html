@@ -1,32 +1,470 @@
-<!DOCTYPE html>
-<html>
+<! DOCTYPE html>
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文件上传</title>
+    <title>文件上传管理系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background:  linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        . header {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            padding: 20px 0;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        .header p {
+            font-size:  16px;
+            opacity: 0.9;
+        }
+
+        /* 成功消息 */
+        .message {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            padding: 16px 24px;
+            border-radius:  12px;
+            margin-bottom:  30px;
+            box-shadow:  0 4px 12px rgba(16, 185, 129, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        .message::before {
+            content: "✓";
+            font-size: 24px;
+            font-weight: bold;
+            width: 32px;
+            height: 32px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform:  translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 卡片样式 */
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            margin-top: 10px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #1f2937;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom:  2px solid #e5e7eb;
+            display: flex;
+            align-items: center;
+            gap:  10px;
+        }
+
+        .card-title::before {
+            content: "📁";
+            font-size: 24px;
+        }
+
+        .card-title.text-upload::before {
+            content: "📝";
+        }
+
+        .card-title.file-list::before {
+            content: "📋";
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom:  20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom:  8px;
+            font-size:  14px;
+        }
+
+        .form-group input[type="file"] {
+            width: 100%;
+            padding: 12px;
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            background: #f9fafb;
+            cursor:  pointer;
+            transition: all 0.3s;
+            font-size: 14px;
+        }
+
+        .form-group input[type="file"]:hover {
+            border-color: #667eea;
+            background: #f3f4f6;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            resize: vertical;
+            transition: border-color 0.3s;
+            min-height: 120px;
+        }
+
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* 按钮样式 */
+        .btn {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size:  15px;
+            font-weight:  600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+            color: white;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(102, 126, 234, 0.6);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        /* 文件列表样式 */
+        .file-list-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .file-item {
+            display:  flex;
+            align-items:  flex-start;
+            gap: 12px;
+            padding: 16px;
+            background: #f9fafb;
+            border:  1px solid #e5e7eb;
+            border-radius: 10px;
+            transition: all 0.3s;
+        }
+
+        .file-item:hover {
+            background: #f3f4f6;
+            border-color: #d1d5db;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .file-icon {
+            flex-shrink: 0;
+            font-size: 28px;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .file-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .file-name {
+            font-weight: 500;
+            color: #1f2937;
+            font-size: 14px;
+            word-wrap: break-word;
+            word-break: break-all;
+            line-height: 1.6;
+            margin-bottom: 8px;
+        }
+
+        .file-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        /* 操作按钮 */
+        .action-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 6px 14px;
+            border-radius:  6px;
+            text-decoration:  none;
+            font-size: 13px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .action-link.download {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .action-link.download:hover {
+            background: #2563eb;
+            transform: scale(1.05);
+        }
+
+        .action-link.view {
+            background: #10b981;
+            color: white;
+        }
+
+        .action-link.view:hover {
+            background: #059669;
+            transform: scale(1.05);
+        }
+
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6b7280;
+        }
+
+        .empty-state::before {
+            content: "📭";
+            font-size: 64px;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .file-item {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .file-icon {
+                align-self: flex-start;
+            }
+
+            .file-actions {
+                width: 100%;
+            }
+
+            .action-link {
+                flex:  1;
+                justify-content: center;
+            }
+        }
+
+        /* 两列布局 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+    </style>
 </head>
 
 <body>
-<h2 style="color: green;">${message!}</h2>
-<form action="/upload" method="post" enctype="multipart/form-data">
-    <div><input type="file" name="file" multiple></div>
-    <div><button type="submit">上传</button></div>
-</form>
+<div class="container">
+    <!-- 页面头部 -->
+    <div class="header">
+        <h1>📦 文件上传管理系统</h1>
+        <p>轻松上传、管理和分享您的文件</p>
+    </div>
 
+    <!-- 成功消息 -->
+    <#if message??>
+    <div class="message">
+        <span>${message}</span>
+    </div>
+    </#if>
+
+<!-- 表单区域 -->
+<div class="form-grid">
+    <!-- 文件上传卡片 -->
+    <div class="card">
+        <h2 class="card-title">文件上传</h2>
+        <form action="/upload" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="fileInput">选择文件（支持多选）</label>
+                <input type="file" id="fileInput" name="file" multiple>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <span>⬆️</span>
+                <span>上传文件</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- 文本上传卡片 -->
+    <div class="card">
+        <h2 class="card-title text-upload">文本上传</h2>
+        <form action="/upload-text" method="post">
+            <div class="form-group">
+                <label for="textInput">文本内容</label>
+                <textarea id="textInput" name="text" placeholder="在此输入或粘贴文本内容..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">
+                <span>📤</span>
+                <span>上传文本</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- 文件列表卡片 -->
 <#if fs??>
-    <table>
-        <tr>
-            <td>名称</td>
-            <td>操作</td>
-        </tr>
+<div class="card">
+    <h2 class="card-title file-list">文件列表</h2>
+    <#if fs? size gt 0>
+    <div class="file-list-container">
         <#list fs as f>
-            <tr>
-                <td>${f.name}</td>
-                <td><a href="/download?f=${f.name}">下载</a></td>
-            </tr>
-        </#list>
-    </table>
+        <div class="file-item">
+            <div class="file-icon">
+            <#if f.name?starts_with("TEXT-")>
+                📝
+                <#else>
+                📄
+            </#if>
+        </div>
+        <div class="file-content">
+            <div class="file-name">${f.name}</div>
+            <div class="file-actions">
+                <a href="/download?f=${f.name}" class="action-link download">
+                    <span>⬇️</span>
+                    <span>下载</span>
+                </a>
+                <#if f.name?starts_with("TEXT-")>
+                <a href="javascript:void(0);" class="action-link view" data-name="${f.name}" onclick="view(this)">
+                    <span>👁️</span>
+                    <span>查看</span>
+                </a>
+            </#if>
+        </div>
+    </div>
+</div>
+</#list>
+</div>
+<#else>
+<div class="empty-state">
+    <p>暂无文件，请先上传文件</p>
+</div>
 </#if>
-</body>
+</div>
+</#if>
+</div>
 
+<!-- 引入文本查看对话框 -->
+<#include "text-dialog.html">
+
+<script>
+    function view(obj) {
+        var name = obj.getAttribute("data-name");
+        fetch('/view?f=' + encodeURIComponent(name))
+            .then((res) => res.text())
+            .then((res) => {
+                console.log(res);
+                openDialog("文本内容 - " + name, res);
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('加载文件内容失败，请重试');
+            });
+    }
+
+    // 文件选择提示
+    document. getElementById('fileInput')?.addEventListener('change', function(e) {
+        const fileCount = e.target.files.length;
+        if (fileCount > 0) {
+            console.log('已选择 '+ fileCount + ' 个文件');
+        }
+    });
+</script>
+</body>
 </html>
