@@ -49,6 +49,6 @@ jobs:
         with:
           files: |
             target/fs.jar
-            target/fs.bat
-            target/fs.sh
+            target/*.bat
+            target/*.sh
           tag_name: ${{ steps.tag.outputs.new_tag }}
