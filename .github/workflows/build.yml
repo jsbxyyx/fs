@@ -30,6 +30,7 @@ jobs:
         run: |
           sed -i -e 's/\r$//' mvnw && chmod +x mvnw
           ./mvnw clean package -DskipTests=true
+          cp bin/* target/
           ls -al target/
       - name: Tag
         id: tag
@@ -48,4 +49,6 @@ jobs:
         with:
           files: |
             target/fs.jar
+            target/fs.bat
+            target/fs.sh
           tag_name: ${{ steps.tag.outputs.new_tag }}

@@ -5,8 +5,10 @@ import java.net.InetSocketAddress;
 import java.net.NetworkInterface;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Pattern;
 
 public class NetUtil {
@@ -16,6 +18,8 @@ public class NetUtil {
     private static final String ANY_HOST = "0.0.0.0";
 
     private static volatile InetAddress LOCAL_ADDRESS = null;
+
+    private static volatile List<InetAddress> LOCAL_ADDRESS_LIST = null;
 
     private static final Pattern IP_PATTERN = Pattern.compile("\\d{1,3}(\\.\\d{1,3}){3,5}$");
 
@@ -66,6 +70,15 @@ public class NetUtil {
         return address == null ? LOCALHOST : address.getHostAddress();
     }
 
+    public static List<String> getLocalIpList(String... preferredNetworks) {
+        List<String> hostList = new ArrayList<>();
+        List<InetAddress> localAddressList = getLocalAddressList(preferredNetworks);
+        for (InetAddress address : localAddressList) {
+            hostList.add(address.getHostAddress());
+        }
+        return hostList;
+    }
+
     public static String getLocalHost() {
         InetAddress address = getLocalAddress();
         return address == null ? "localhost" : address.getHostName();
@@ -78,6 +91,58 @@ public class NetUtil {
         InetAddress localAddress = getLocalAddress0(preferredNetworks);
         LOCAL_ADDRESS = localAddress;
         return localAddress;
+    }
+
+    private static List<InetAddress> getLocalAddressList(String... preferredNetworks) {
+        if (LOCAL_ADDRESS_LIST != null) {
+            return LOCAL_ADDRESS_LIST;
+        }
+        List<InetAddress> list = new ArrayList<>();
+        try {
+            Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            if (interfaces != null) {
+                while (interfaces.hasMoreElements()) {
+                    try {
+                        NetworkInterface network = interfaces.nextElement();
+                        if (network.isUp()) {
+                            Enumeration<InetAddress> addresses = network.getInetAddresses();
+                            while (addresses.hasMoreElements()) {
+                                try {
+                                    InetAddress address = addresses.nextElement();
+                                    if (isValidAddress(address)) {
+                                        //check preferredNetworks
+                                        if (preferredNetworks.length > 0) {
+                                            String ip = address.getHostAddress();
+                                            for (String regex : preferredNetworks) {
+                                                if (regex == null || "".equals(regex.trim())) {
+                                                    continue;
+                                                }
+                                                if (ip.matches(regex) || ip.startsWith(regex)) {
+                                                    list.add(address);
+                                                }
+                                            }
+                                        } else {
+                                            list.add(address);
+                                        }
+                                    }
+                                } catch (Throwable e) {
+                                    System.out.println("Failed to retrieving ip address, " + e.getMessage());
+                                    e.printStackTrace();
+                                }
+                            }
+                        }
+                    } catch (Throwable e) {
+                        System.out.println("Failed to retrieving ip address, " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            System.out.println("Failed to retrieving ip address, " + e.getMessage());
+            e.printStackTrace();
+        }
+        LOCAL_ADDRESS_LIST = list;
+        return list;
     }
 
     private static InetAddress getLocalAddress0(String... preferredNetworks) {

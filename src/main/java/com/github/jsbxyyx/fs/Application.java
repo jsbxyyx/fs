@@ -8,6 +8,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 
+import java.util.List;
+
 @SpringBootApplication(scanBasePackages = {"com.github.jsbxyyx"})
 public class Application {
 
@@ -18,8 +20,19 @@ public class Application {
         String network = System.getProperty("network", "192.168,10.");
         ConfigurableApplicationContext context = SpringApplication.run(Application.class, args);
         String port = context.getEnvironment().getProperty("server.port");
-        log.info("\n\n\thttp://{}:{}\n\thttp://127.0.0.1:{}\n",
-                NetUtil.getLocalIp(network.split(",")), port, port);
+
+        StringBuilder ipStr = new StringBuilder();
+        List<String> localIpList = NetUtil.getLocalIpList(network.split(","));
+        for (String ip : localIpList) {
+            ipStr.append("\t - ").append("http://").append(ip).append(":").append(port).append("\n");
+        }
+        ipStr.append("\n");
+        ipStr.append("\t").append("确保所有设备连接到相同得网络。").append("\n");
+        ipStr.append("\t").append("Ensure all devices are connected to the same network.").append("\n");
+        ipStr.append("\n");
+        ipStr.append("\t").append("用手机或者其他网络设备的浏览器打开上面得网址。").append("\n");
+        ipStr.append("\t").append("Open the URL above in your phone's browser or on any other device.").append("\n");
+        log.info("\n\n{}", ipStr);
     }
 
     public static void parseArgs(String[] args) {
